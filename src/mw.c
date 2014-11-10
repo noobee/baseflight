@@ -460,7 +460,6 @@ void loop(void)
     bool isThrottleLow = false;
     bool rcReady = false;
 
-#ifndef CJMCU
     // calculate rc stuff from serial-based receivers (spek/sbus)
     if (feature(FEATURE_SERIALRX)) {
         switch (mcfg.serialrx_type) {
@@ -479,7 +478,6 @@ void loop(void)
                 break;
         }
     }
-#endif
 
     if (((int32_t)(currentTime - rcTime) >= 0) || rcReady) { // 50Hz or data driven
         rcReady = false;
@@ -492,13 +490,8 @@ void loop(void)
                 mwDisarm();
         }
 
-        // Read value of AUX channel as rssi
-        // 0 is disable, 1-4 is AUX{1..4}
-        if (mcfg.rssi_aux_channel > 0) {
-            const int16_t rssiChannelData = rcData[AUX1 + mcfg.rssi_aux_channel - 1];
-            // Range of rssiChannelData is [1000;2000]. rssi should be in [0;1023];
-            rssi = (uint16_t)((constrain(rssiChannelData - 1000, 0, 1000) / 1000.0f) * 1023.0f);
-        }
+        // Read rssi value
+        rssi = RSSI_getValue();
 
         // Failsafe routine
         if (feature(FEATURE_FAILSAFE)) {
@@ -554,8 +547,13 @@ void loop(void)
         }
 
         if (cfg.activate[BOXARM] > 0) { // Disarming via ARM BOX
-            if (!rcOptions[BOXARM] && f.ARMED)
+            if (!rcOptions[BOXARM] && f.ARMED) {
+                if (mcfg.disarm_kill_switch) {
                     mwDisarm();
+                } else if (isThrottleLow) {
+                    mwDisarm();
+                }
+            }
         }
 
         if (rcDelayCommand == 20) {

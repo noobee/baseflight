@@ -24,7 +24,7 @@ master_t mcfg;  // master config struct with data independent from profiles
 config_t cfg;   // profile config struct
 const char rcChannelLetters[] = "AERT1234";
 
-static const uint8_t EEPROM_CONF_VERSION = 66;
+static const uint8_t EEPROM_CONF_VERSION = 71;
 static uint32_t enabledSensors = 0;
 static void resetConf(void);
 static const uint32_t FLASH_WRITE_ADDR = 0x08000000 + (FLASH_PAGE_SIZE * (FLASH_PAGE_COUNT - (CONFIG_SIZE / 1024)));
@@ -208,6 +208,7 @@ static void resetConf(void)
     mcfg.board_align_pitch = 0;
     mcfg.board_align_yaw = 0;
     mcfg.acc_hardware = ACC_DEFAULT;     // default/autodetect
+    mcfg.mag_hardware = MAG_DEFAULT;
     mcfg.max_angle_inclination = 500;    // 50 degrees
     mcfg.yaw_control_direction = 1;
     mcfg.moron_threshold = 32;
@@ -224,6 +225,7 @@ static void resetConf(void)
     mcfg.mincheck = 1100;
     mcfg.maxcheck = 1900;
     mcfg.retarded_arm = 0;       // disable arm/disarm on roll left/right
+    mcfg.disarm_kill_switch = 1; // AUX disarm independently of throttle value
     mcfg.flaps_speed = 0;
     mcfg.fixedwing_althold_dir = 1;
     // Motor/ESC/Servo
@@ -247,6 +249,7 @@ static void resetConf(void)
     mcfg.looptime = 3500;
     mcfg.emf_avoidance = 0;
     mcfg.rssi_aux_channel = 0;
+    mcfg.rssi_adc_max = 4095;
 
     cfg.pidController = 0;
     cfg.P8[ROLL] = 40;
